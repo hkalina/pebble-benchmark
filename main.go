@@ -4,11 +4,12 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/cockroachdb/pebble"
+	"os"
 	"time"
 )
 
 func main() {
-	db, err := pebble.Open("/media/sda2/opera/pebble-benchmark", &pebble.Options{})
+	db, err := pebble.Open(os.Args[1], &pebble.Options{})
 	if err != nil {
 		panic(err)
 	}
