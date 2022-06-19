@@ -2,10 +2,11 @@ module github.com/hkalina/pebble-benchmark
 
 go 1.17
 
-require github.com/cockroachdb/pebble v0.0.0-20220524133354-f30672e7240b
+require github.com/cockroachdb/pebble v0.0.0-20220616214320-059c072fd94a
 
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
+	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/cockroachdb/errors v1.8.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect

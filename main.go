@@ -15,25 +15,30 @@ func main() {
 	}
 	defer db.Close()
 
-	printStats(db)
 	for i := uint64(0); i < 1_000_000; i++ {
 		prefix := intToBytes(i)
-		generateData(db, prefix)
-		printStats(db)
-	}
-}
 
-func printStats(db *pebble.DB) {
-	fmt.Printf("%s:\n%s\n", time.Now(), db.Metrics().String())
-}
+		// insert 1_000_000 records
+		insertStart := time.Now()
+		for i := uint64(0); i < 1_000_000; i++ {
+			key := append(prefix, intToBytes(i)...)
+			err := db.Set(key, []byte{0x12, 0x34, 0x56, 0x78, 0x90}, nil)
+			if err != nil {
+				panic(err)
+			}
+		}
+		insertDur := time.Since(insertStart)
+		metrcs := db.Metrics().String()
 
-func generateData(db *pebble.DB, prefix []byte) {
-	for i := uint64(0); i < 1_000_000; i++ {
-		key := append(prefix, intToBytes(i)...)
-		err := db.Set(key, []byte{0x12, 0x34, 0x56, 0x78, 0x90}, nil)
+		// run compact - if omitted, the performance is bad
+		compactStart := time.Now()
+		err = db.Compact([]byte{}, []byte{0xFF}, true)
 		if err != nil {
 			panic(err)
 		}
+		compactDur := time.Since(compactStart)
+
+		fmt.Printf("iteration: %s:\n%d insert: %d compact: %d\n%s\n", time.Now(), i, insertDur.Milliseconds(), compactDur.Milliseconds(), metrcs)
 	}
 }
 
