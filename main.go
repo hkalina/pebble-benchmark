@@ -41,7 +41,7 @@ func main() {
 		}
 		compactDur := time.Since(compactStart)
 
-		fmt.Printf("iteration: %s:\n%d insert: %d compact: %d\n%s\n", time.Now(), i, insertDur.Milliseconds(), compactDur.Milliseconds(), metrcs)
+		fmt.Printf("%s:\niteration: %d insert: %d compact: %d\n%s\n", time.Now(), i, insertDur.Milliseconds(), compactDur.Milliseconds(), metrcs)
 	}
 }
 
