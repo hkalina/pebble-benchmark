@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	useCompact := false
 	db, err := pebble.Open(os.Args[1], &pebble.Options{})
 	if err != nil {
 		panic(err)
@@ -32,9 +33,11 @@ func main() {
 
 		// run compact - if omitted, the performance is bad
 		compactStart := time.Now()
-		err = db.Compact([]byte{}, []byte{0xFF}, true)
-		if err != nil {
-			panic(err)
+		if useCompact {
+			err = db.Compact([]byte{}, []byte{0xFF}, true)
+			if err != nil {
+				panic(err)
+			}
 		}
 		compactDur := time.Since(compactStart)
 
