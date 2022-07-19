@@ -40,8 +40,8 @@ func main() {
 func runInserts(db *pebble.DB) {
 	defer waitGroup.Done()
 
-	for i := uint64(0); true; i++ {
-		prefix := intToBytes(i)
+	for {
+		prefix := intToBytes(uint64(time.Now().UnixNano()))
 
 		// insert one batch of records
 		insertStart := time.Now()
