@@ -22,61 +22,45 @@ var insertCounter = promauto.NewCounter(prometheus.CounterOpts{
 	Name: "pebble_benchmark_insert",
 	Help: "Time consumed by inserting",
 })
-var compactCounter = promauto.NewCounter(prometheus.CounterOpts{
-	Name: "pebble_benchmark_compact",
-	Help: "Time consumed by compact",
-})
 
 var waitGroup sync.WaitGroup
 
 func main() {
-	useCompact := os.Args[2] == "compact"
-
 	db, err := pebble.Open(os.Args[1], &pebble.Options{})
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
-	waitGroup.Add(1)
 	go runPrometheusServer()
 
-	for i := 0; i < 16; i++ {
-		waitGroup.Add(1)
-		go runInserts(db, useCompact && i == 0) // compact only in one worker thread
-	}
-	waitGroup.Wait()
+	runInserts(db)
 }
 
-func runInserts(db *pebble.DB, useCompact bool) {
+func runInserts(db *pebble.DB) {
 	defer waitGroup.Done()
 
 	for i := uint64(0); true; i++ {
 		prefix := intToBytes(i)
 
-		// insert 1_000_000 records
-		for ii := uint64(0); ii < 100_000; ii++ {
+		// insert one batch of records
+		insertStart := time.Now()
+		batch := db.NewBatch()
+		for ii := uint64(0); ii < 100*1024; ii++ {
 			key := append(prefix, intToBytes(ii)...)
 			value := randomBytes()
-			insertStart := time.Now()
-			err := db.Set(key, value, nil)
+			err := batch.Set(key, value, pebble.NoSync)
 			if err != nil {
 				panic(err)
 			}
-			insertCounter.Add(float64(time.Since(insertStart).Nanoseconds()))
-			insertedAmountCounter.Inc()
 		}
+		err := db.Apply(batch, pebble.NoSync)
+		if err != nil {
+			panic(err)
+		}
+		insertCounter.Add(float64(time.Since(insertStart).Nanoseconds()))
+		insertedAmountCounter.Add(100 * 1024)
 		fmt.Printf("%s:\n%s\n", time.Now().String(), db.Metrics().String()) // print pebble metrics
-
-		// run compact - if omitted, the performance is bad
-		if useCompact {
-			compactStart := time.Now()
-			err := db.Compact([]byte{}, []byte{0xFF}, true)
-			if err != nil {
-				panic(err)
-			}
-			compactCounter.Add(float64(time.Since(compactStart).Nanoseconds()))
-		}
 	}
 }
 
