@@ -3,7 +3,7 @@ module github.com/hkalina/pebble-benchmark
 go 1.17
 
 require (
-	github.com/cockroachdb/pebble v0.0.0-20220616214320-059c072fd94a
+	github.com/cockroachdb/pebble v0.0.0-20220719144226-63d552794411
 	github.com/prometheus/client_golang v1.12.2
 )
 
