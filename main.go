@@ -26,7 +26,9 @@ var insertCounter = promauto.NewCounter(prometheus.CounterOpts{
 var waitGroup sync.WaitGroup
 
 func main() {
-	db, err := pebble.Open(os.Args[1], &pebble.Options{})
+	db, err := pebble.Open(os.Args[1], &pebble.Options{
+		MaxConcurrentCompactions: 5,
+	})
 	if err != nil {
 		panic(err)
 	}
