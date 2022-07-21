@@ -27,7 +27,7 @@ var waitGroup sync.WaitGroup
 
 func main() {
 	db, err := pebble.Open(os.Args[1], &pebble.Options{
-		MaxConcurrentCompactions: 5,
+		MaxConcurrentCompactions: 3,
 	})
 	if err != nil {
 		panic(err)
